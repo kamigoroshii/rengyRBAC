@@ -238,6 +238,15 @@ function App() {
 
   return (
     <div className={`app-shell${sidebarOpen ? '' : ' sidebar-collapsed'}`}>
+      {/* Backdrop — closes sidebar when tapped on mobile */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ── */}
       <aside className="sidebar">
         <div className="sidebar-header">
@@ -252,7 +261,11 @@ function App() {
           {moduleList.map(entry => (
             <button key={entry.id} type="button"
               className={`nav-btn${activeModule === entry.id ? ' active' : ''}`}
-              onClick={() => setActiveModule(entry.id)}
+              onClick={() => {
+                setActiveModule(entry.id);
+                // Close drawer on mobile after navigation
+                if (window.innerWidth <= 900) setSidebarOpen(false);
+              }}
               title={entry.label} aria-label={entry.label}>
               <entry.icon />
               {sidebarOpen && <span>{entry.label}</span>}
