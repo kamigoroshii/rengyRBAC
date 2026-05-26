@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: rengy-rbac-server
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false        # you paste this in the Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_ORIGIN
+        sync: false        # you paste your Vercel URL here after deploying frontend
+      - key: ADMIN_EMAIL
+        value: admin@rengyrbac.com
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: System Admin
+      - key: DEFAULT_USER_PASSWORD
+        value: User@12345

@@ -2,17 +2,8 @@ import { Team } from '../models/Team.js';
 import { Membership } from '../models/Membership.js';
 import { User } from '../models/User.js';
 import { Role } from '../models/Role.js';
-import { Permission } from '../models/Permission.js';
 import { AppError, asyncHandler } from '../middleware/error.js';
 import { buildSearchFilter, parsePagination } from '../utils/query.js';
-
-const populateMembership = () => ({
-  path: 'roles',
-  populate: {
-    path: 'permissions',
-    model: 'Permission',
-  },
-});
 
 export const createTeam = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
@@ -66,15 +57,17 @@ export const addUserToTeam = asyncHandler(async (req, res) => {
   }
 
   const roles = roleIds.length ? await Role.find({ _id: { $in: roleIds } }) : [];
-  const update = { $setOnInsert: { user: userId, team: teamId } };
+  const roleObjectIds = roles.map((role) => role._id);
 
-  update.$set = { roles: roles.map((role) => role._id) };
-
+  // Use findOneAndUpdate with upsert — set roles whether creating or updating
   const membership = await Membership.findOneAndUpdate(
     { user: userId, team: teamId },
-    update,
+    { $set: { roles: roleObjectIds } },
     { upsert: true, new: true, setDefaultsOnInsert: true }
-  ).populate('user team roles');
+  )
+    .populate('user')
+    .populate('team')
+    .populate({ path: 'roles', populate: { path: 'permissions', model: 'Permission' } });
 
   res.status(201).json(membership);
 });
@@ -104,8 +97,9 @@ export const updateUserRolesInTeam = asyncHandler(async (req, res) => {
   await membership.save();
 
   const updated = await Membership.findById(membership._id)
-    .populate('user team')
-    .populate(populateMembership());
+    .populate('user')
+    .populate('team')
+    .populate({ path: 'roles', populate: { path: 'permissions', model: 'Permission' } });
 
   res.json(updated);
 });
@@ -119,8 +113,9 @@ export const getTeamMembers = asyncHandler(async (req, res) => {
   }
 
   const memberships = await Membership.find({ team: teamId })
-    .populate('user team')
-    .populate(populateMembership())
+    .populate('user')
+    .populate('team')
+    .populate({ path: 'roles', populate: { path: 'permissions', model: 'Permission' } })
     .sort({ createdAt: -1 });
 
   const items = memberships.map((membership) => {

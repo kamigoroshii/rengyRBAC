@@ -23,11 +23,12 @@ export const signUp = asyncHandler(async (req, res) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
+  // accountType is always 'employee' on self-registration — admins are seeded or created by other admins
   const user = await User.create({
     name,
     email,
     passwordHash,
-    accountType: accountType === 'admin' ? 'admin' : 'employee',
+    accountType: 'employee',
   });
 
   console.log(`[auth] signup success: ${user.email} (${user.accountType})`);

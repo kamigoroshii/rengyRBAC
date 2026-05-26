@@ -11,9 +11,12 @@ export const buildSearchFilter = (fields, search) => {
     return {};
   }
 
+  // Escape special regex characters to prevent injection / 500 errors
+  const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   return {
     $or: fields.map((field) => ({
-      [field]: { $regex: search, $options: 'i' },
+      [field]: { $regex: escaped, $options: 'i' },
     })),
   };
 };

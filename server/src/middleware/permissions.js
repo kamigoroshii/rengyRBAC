@@ -4,8 +4,8 @@ import { hasPermission } from '../utils/rbac.js';
 // Usage: requirePermission('CREATE_TASK')
 export const requirePermission = (code) =>
   asyncHandler(async (req, res, next) => {
-    // Admins bypass permission checks (auth middleware sets req.user)
-    if (req.user?.accountType === 'admin' || req.auth?.accountType === 'admin') {
+    // Admins bypass permission checks
+    if (req.auth?.accountType === 'admin') {
       return next();
     }
 
@@ -14,7 +14,12 @@ export const requirePermission = (code) =>
       return res.status(400).json({ message: 'teamId is required for permission checks' });
     }
 
-    const userId = req.user?._id || req.auth?.userId;
+    // req.auth.userId is set by the JWT middleware (see utils/auth.js signAuthToken)
+    const userId = req.auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
     const allowed = await hasPermission(userId, teamId, code);
     if (!allowed) {
       return res.status(403).json({ message: 'Forbidden: missing permission' });
