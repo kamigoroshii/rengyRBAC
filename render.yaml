@@ -4,18 +4,18 @@ services:
     runtime: node
     rootDir: server
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node src/index.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
       - key: MONGODB_URI
-        sync: false        # you paste this in the Render dashboard
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: CLIENT_ORIGIN
-        sync: false        # you paste your Vercel URL here after deploying frontend
+        sync: false
       - key: ADMIN_EMAIL
         value: admin@rengyrbac.com
       - key: ADMIN_PASSWORD
